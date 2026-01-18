@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
 			"https://slack.com/api/openid.connect.userInfo",
 			{
 				headers: {
-					Authorization: `Bearer ${tokenData.access_token}`,
+					Authorization: `Bearer ${tokenData.authed_user.access_token}`,
 				},
 			},
 		);
