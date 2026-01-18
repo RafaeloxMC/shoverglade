@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useRouter } from "next/navigation";
 
 function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -31,6 +32,8 @@ interface User {
 }
 
 export default function Dashboard() {
+	const router = useRouter();
+
 	const [slots, setSlots] = useState<Slot[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [user, setUser] = useState<User | null>(null);
@@ -72,7 +75,7 @@ export default function Dashboard() {
 
 	const handleLogout = async () => {
 		await fetch("/api/v1/auth/logout", { method: "POST" });
-		window.location.href = "/";
+		router.push("/");
 	};
 
 	const handleConfirmBooking = async () => {
