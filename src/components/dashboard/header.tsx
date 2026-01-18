@@ -30,7 +30,7 @@ function Header(props: HeaderProps) {
 					<span className="text-sm font-medium">
 						{props.user?.name}
 					</span>
-					<span className="text-xs text-neutral-500">
+					<span className="text-xs text-neutral-300">
 						{props.user?.isAdmin ? "Admin" : "Attendee"}
 					</span>
 				</div>
@@ -44,7 +44,7 @@ function Header(props: HeaderProps) {
 				)}
 				<button
 					onClick={handleLogout}
-					className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors ml-2"
+					className="text-xs text-neutral-300 hover:text-neutral-900 transition-colors ml-2"
 				>
 					Sign Out
 				</button>

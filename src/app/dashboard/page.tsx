@@ -8,6 +8,7 @@ import { twMerge } from "tailwind-merge";
 import { IUser } from "@/database/schemas/User";
 import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/header";
+import Footer from "@/components/footer";
 
 function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -138,13 +139,13 @@ export default function Dashboard() {
 		);
 
 	return (
-		<div className="min-h-screen bg-black text-white font-sans selection:bg-teal-100">
+		<div className="min-h-screen bg-[#123b49] text-white font-sans selection:bg-teal-100">
 			<Header user={user} />
 
 			<main className="max-w-3xl mx-auto px-6 pb-20">
 				<div className="text-center mb-10">
 					<h2 className="text-3xl font-bol mb-2">Book a Shower</h2>
-					<p className="text-neutral-500">
+					<p className="text-neutral-300">
 						Select a time slot below to reserve your 20-minute
 						session.
 					</p>
@@ -163,7 +164,7 @@ export default function Dashboard() {
 										new Date(myBooking.startTime),
 										"h:mm aa",
 									)}
-									<span className="text-neutral-400 font-normal mx-2">
+									<span className="text-neutral-300 font-normal mx-2">
 										-
 									</span>
 									{format(
@@ -193,12 +194,12 @@ export default function Dashboard() {
 
 				{!myBooking && (
 					<>
-						<div className="bg-neutral-950 rounded-3xl shadow-sm border border-neutral-900 p-8">
+						<div className="bg-neutral-50/10 backdrop-blur-3xl rounded-3xl shadow-sm p-8">
 							<div className="flex items-center justify-between mb-6">
 								<h3 className="font-semibold text-lg">
 									Available Slots (in the next 24h)
 								</h3>
-								<div className="text-sm text-neutral-500">
+								<div className="text-sm text-neutral-400">
 									Today
 								</div>
 							</div>
@@ -234,7 +235,7 @@ export default function Dashboard() {
 														isSelected
 															? "bg-teal-600 text-white border-teal-600 shadow-md scale-105 z-10"
 															: isBooked
-																? "bg-neutral-800 text-neutral-400 border-neutral-700 cursor-not-allowed"
+																? "bg-neutral-800 text-neutral-300 border-neutral-700 cursor-not-allowed"
 																: "bg-black border-neutral-950 hover:border-neutral-700 hover:bg-neutral-950",
 													)}
 												>
@@ -287,14 +288,14 @@ export default function Dashboard() {
 							</div>
 
 							{slots.length === 0 && (
-								<div className="text-center py-10 text-neutral-400">
+								<div className="text-center py-10 text-neutral-300">
 									No slots available for today.
 								</div>
 							)}
 						</div>
 
 						<div className="pt-12">
-							<div className="max-w-3xl mx-auto bg-neutral-950 rounded-2xl md:border border-neutral-900 p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+							<div className="max-w-3xl mx-auto bg-neutral-50/10 rounded-2xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
 								<div className="hidden md:block">
 									<p className="text-sm uppercase tracking-wider font-semibold">
 										Selected Time
@@ -338,6 +339,7 @@ export default function Dashboard() {
 					</>
 				)}
 			</main>
+			<Footer />
 		</div>
 	);
 }
