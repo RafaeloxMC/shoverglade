@@ -5,7 +5,10 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { IUser } from "@/database/schemas/User";
 import { useRouter } from "next/navigation";
+import Header from "@/components/dashboard/header";
+import User from "@/database/schemas/User";
 
 function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -23,24 +26,15 @@ interface Slot {
 	};
 }
 
-interface User {
-	_id: string;
-	slackId: string;
-	name: string;
-	avatar: string;
-	isAdmin: boolean;
-}
-
 export default function Dashboard() {
 	const router = useRouter();
 
 	const [slots, setSlots] = useState<Slot[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [user, setUser] = useState<User | null>(null);
+	const [user, setUser] = useState<IUser | null>(null);
 	const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	// Fetch slots
 	const fetchSlots = async (silent = false) => {
 		if (!silent) setLoading(true);
 		try {
@@ -55,6 +49,11 @@ export default function Dashboard() {
 		} finally {
 			if (!silent) setLoading(false);
 		}
+	};
+
+	const handleLogout = async () => {
+		await fetch("/api/v1/auth/logout", { method: "POST" });
+		router.push("/");
 	};
 
 	useEffect(() => {
@@ -72,11 +71,6 @@ export default function Dashboard() {
 				handleLogout();
 			});
 	}, []);
-
-	const handleLogout = async () => {
-		await fetch("/api/v1/auth/logout", { method: "POST" });
-		router.push("/");
-	};
 
 	const handleConfirmBooking = async () => {
 		if (!selectedSlot) return;
@@ -129,9 +123,9 @@ export default function Dashboard() {
 		}
 	};
 
-	const myBooking = slots.find((s) => s.userId === user?._id);
+	const myBooking = slots.find((s) => s.userId === user?._id.toString());
 
-	if (loading && !slots.length)
+	if ((loading && !slots.length) || !user)
 		return (
 			<div className="flex h-screen w-full items-center justify-center bg-neutral-950 text-white">
 				<div className="animate-pulse flex flex-col items-center gap-4">
@@ -145,42 +139,7 @@ export default function Dashboard() {
 
 	return (
 		<div className="min-h-screen bg-black text-white font-sans selection:bg-teal-100">
-			{/* Header */}
-			<header className="flex justify-between items-center p-6 md:p-8 max-w-5xl mx-auto w-full">
-				<div className="flex items-center gap-3">
-					<div className="h-8 w-8 bg-transparent rounded-lg flex items-center justify-center text-white font-bold text-lg">
-						🚿
-					</div>
-					<h1 className="text-xl font-bold tracking-tight">
-						Shoverglade
-					</h1>
-				</div>
-
-				<div className="flex items-center gap-4">
-					<div className="hidden md:flex flex-col items-end">
-						<span className="text-sm font-medium">
-							{user?.name}
-						</span>
-						<span className="text-xs text-neutral-500">
-							{user?.isAdmin ? "Admin" : "Attendee"}
-						</span>
-					</div>
-					{user?.avatar && (
-						/* eslint-disable-next-line @next/next/no-img-element */
-						<img
-							src={user.avatar}
-							alt="User"
-							className="w-9 h-9 rounded-full border border-neutral-800"
-						/>
-					)}
-					<button
-						onClick={handleLogout}
-						className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors ml-2"
-					>
-						Sign Out
-					</button>
-				</div>
-			</header>
+			<Header user={user} />
 
 			<main className="max-w-3xl mx-auto px-6 pb-20">
 				<div className="text-center mb-10">
@@ -191,7 +150,6 @@ export default function Dashboard() {
 					</p>
 				</div>
 
-				{/* My Booking Card */}
 				{myBooking && (
 					<div className="mb-10 bg-white rounded-2xl p-6 shadow-sm border border-teal-100 relative overflow-hidden group">
 						<div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
@@ -301,17 +259,12 @@ export default function Dashboard() {
 															/>
 														)}
 														<span className="text-[10px] truncate max-w-[60px] leading-tight">
-															{
-																slot.bookedBy.name.split(
-																	" ",
-																)[0]
-															}
+															{slot.bookedBy.name}
 														</span>
 													</div>
 												)}
 											</button>
 
-											{/* Hover Tooltip for booked slots */}
 											{isBooked && slot.bookedBy && (
 												<div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-neutral-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
 													Booked by{" "}
@@ -330,7 +283,6 @@ export default function Dashboard() {
 							)}
 						</div>
 
-						{/* Booking Summary & Action */}
 						<div className="pt-12">
 							<div className="max-w-3xl mx-auto bg-neutral-950 rounded-2xl md:border border-neutral-900 p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
 								<div className="hidden md:block">

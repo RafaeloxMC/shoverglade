@@ -1,5 +1,5 @@
 import { connectDB } from "@/database/db";
-import User from "@/database/models/User";
+import User from "@/database/schemas/User";
 import { sign } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -78,9 +78,11 @@ export async function GET(request: NextRequest) {
 
 		await connectDB();
 
-        // Check against admin list in env
-        const adminIds = (process.env.ADMIN_SLACK_IDS || "").split(",").map(id => id.trim());
-        const isAdmin = adminIds.includes(userData.sub);
+		// Check against admin list in env
+		const adminIds = (process.env.ADMIN_SLACK_IDS || "")
+			.split(",")
+			.map((id) => id.trim());
+		const isAdmin = adminIds.includes(userData.sub);
 
 		const user = await User.findOneAndUpdate(
 			{ slackId: userData.sub },
@@ -89,7 +91,7 @@ export async function GET(request: NextRequest) {
 				name: userData.name,
 				email: userData.email,
 				avatar: userData.picture,
-                isAdmin: isAdmin,
+				isAdmin: isAdmin,
 				updatedAt: new Date(),
 			},
 			{ upsert: true, new: true },
@@ -99,7 +101,7 @@ export async function GET(request: NextRequest) {
 		const token = sign(
 			{ userId: user._id, slackId: user.slackId },
 			process.env.JWT_SECRET || "default_secret",
-			{ expiresIn: "7d" }
+			{ expiresIn: "7d" },
 		);
 
 		const response = NextResponse.redirect(

@@ -1,39 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 
-if (!process.env.MONGO_URI) {
-	throw new Error("MONGO_URI is not defined");
-}
+// MODELS HERE:
+import "@/database/schemas/User";
+import "@/database/schemas/Slot";
+import "@/database/schemas/Session";
 
-let cached = (global as any).mongoose;
-
-if (!cached) {
-	cached = (global as any).mongoose = { conn: null, promise: null };
-}
+let conn: mongoose.Mongoose;
 
 export async function connectDB() {
-	if (cached.conn) {
-		return cached.conn;
+	if (!process.env.MONGO_URI) {
+		throw Error("MONGO_URI not found in environment!");
 	}
-
-	if (!cached.promise) {
-		const opts = {
-			bufferCommands: false,
-		};
-
-		cached.promise = mongoose
-			.connect(process.env.MONGO_URI!, opts)
-			.then((mongoose) => {
-				return mongoose;
-			});
-	}
-
-	try {
-		cached.conn = await cached.promise;
-	} catch (e) {
-		cached.promise = null;
-		throw e;
-	}
-
-	return cached.conn;
+	if (!conn) conn = await mongoose.connect(process.env.MONGO_URI || "");
 }

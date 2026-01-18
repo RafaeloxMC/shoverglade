@@ -5,6 +5,7 @@ export interface IUser {
 	slackId: string;
 	name: string;
 	avatar: string;
+	isAdmin: boolean;
 }
 
 const userSchema: Schema<IUser> = new Schema({
