@@ -2,6 +2,7 @@ import { connectDB } from "@/database/db";
 import Session from "@/database/schemas/Session";
 import User, { IUser } from "@/database/schemas/User";
 import { cookies } from "next/headers";
+import Link from "next/link";
 
 async function getAuthenticatedUser(): Promise<IUser | null> {
 	try {
@@ -41,7 +42,16 @@ async function DashboardPage() {
 				{user ? (
 					<>
 						{" "}
-						<h2>Welcome, {user.name}!</h2>
+						<h2>
+							Welcome, {user.name}!{" "}
+							<Link
+								href="/api/v1/auth/logout"
+								prefetch={false}
+								className="underline cursor-pointer"
+							>
+								Sign Out
+							</Link>
+						</h2>
 						<div>
 							<h2 className="text-2xl font-extrabold">
 								Shower Schedule
