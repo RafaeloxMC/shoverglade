@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
 	try {
 		const tokenResponse = await fetch(
-			"https://slack.com/api/oauth.v2.access",
+			"https://slack.com/api/openid.connect.token",
 			{
 				method: "POST",
 				headers: {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 		}
 
 		const userResponse = await fetch(
-			"https://slack.com/api/users.identity",
+			"https://slack.com/api/openid.connect.userInfo",
 			{
 				headers: {
 					Authorization: `Bearer ${tokenData.authed_user.access_token}`,
