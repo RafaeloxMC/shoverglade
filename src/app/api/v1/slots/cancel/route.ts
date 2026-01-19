@@ -7,7 +7,7 @@ import { Types } from "mongoose";
 
 async function getCurrentUserId() {
 	const cookieStore = await cookies();
-	const token = cookieStore.get("shovergladeCookie")?.value;
+	const token = cookieStore.get("showergladeCookie")?.value;
 	if (!token) return null;
 	try {
 		const decoded = verify(

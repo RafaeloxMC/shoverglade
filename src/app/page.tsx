@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default async function Home() {
 	const cookieStore = await cookies();
-	const token = cookieStore.get("shovergladeCookie");
+	const token = cookieStore.get("showergladeCookie");
 	const isLoggedIn = !!token;
 
 	return (

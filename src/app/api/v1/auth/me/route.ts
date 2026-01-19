@@ -6,7 +6,7 @@ import User from "@/database/schemas/User";
 
 export async function GET() {
 	const cookieStore = await cookies();
-	const token = cookieStore.get("shovergladeCookie")?.value;
+	const token = cookieStore.get("showergladeCookie")?.value;
 
 	if (!token) {
 		return NextResponse.json({ user: null });

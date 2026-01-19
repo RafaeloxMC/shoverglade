@@ -7,7 +7,7 @@ export async function authenticateUser(
 	request: NextRequest,
 ): Promise<IUser | null> {
 	try {
-		let token = request.cookies.get("shovergladeCookie")?.value;
+		let token = request.cookies.get("showergladeCookie")?.value;
 
 		if (!token) {
 			const authHeader = request.headers.get("Authorization");
