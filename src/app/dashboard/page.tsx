@@ -8,7 +8,6 @@ import { twMerge } from "tailwind-merge";
 import { IUser } from "@/database/schemas/User";
 import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/header";
-import Footer from "@/components/footer";
 
 function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
