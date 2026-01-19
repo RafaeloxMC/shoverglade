@@ -333,15 +333,24 @@ export default function Dashboard() {
 									</div>
 								</div>
 
-								<button
-									onClick={handleConfirmBooking}
-									disabled={!selectedSlot || isSubmitting}
-									className="w-full md:w-auto px-8 py-3 bg-teal-900 hover:bg-teal-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-teal-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:shadow-none"
-								>
-									{isSubmitting
-										? "Confirming..."
-										: "Confirm Booking"}
-								</button>
+								<div className="flex flex-col gap-2 items-center justify-center">
+									<button
+										onClick={handleConfirmBooking}
+										disabled={!selectedSlot || isSubmitting}
+										className="w-full md:w-auto px-8 py-3 bg-teal-900 hover:bg-teal-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-teal-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:shadow-none"
+									>
+										{isSubmitting
+											? "Confirming..."
+											: "Confirm Booking"}
+									</button>
+									<div className="flex flex-row gap-2">
+										<input
+											type="checkbox"
+											placeholder="Anonymize Booking"
+										/>
+										<label>Anonymize Booking</label>
+									</div>
+								</div>
 							</div>
 						</div>
 					</>

@@ -10,6 +10,7 @@ export interface ISlot {
 		name: string;
 		avatar: string;
 	};
+	anonymized: boolean;
 }
 
 const slotSchema = new mongoose.Schema(
@@ -22,6 +23,7 @@ const slotSchema = new mongoose.Schema(
 			ref: "User",
 			default: null,
 		},
+		anonymized: { type: Boolean, default: false },
 	},
 	{ timestamps: true },
 );

@@ -52,6 +52,12 @@ export async function POST(request: Request) {
 			);
 		}
 
+		let anonymized = false;
+
+		if (body.anonymized) {
+			anonymized = true;
+		}
+
 		const existingBooking = await Slot.findOne({ userId, isBooked: true });
 		if (existingBooking) {
 			return NextResponse.json(
@@ -82,6 +88,7 @@ export async function POST(request: Request) {
 			isBooked: true,
 			userId: new Types.ObjectId(userId),
 			startTime: now,
+			anonymized: anonymized,
 		});
 
 		return NextResponse.json({ success: true, slot });

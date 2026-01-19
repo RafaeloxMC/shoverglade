@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/database/db";
-import Slot from "@/database/schemas/Slot";
+import Slot, { ISlot } from "@/database/schemas/Slot";
 import User, { IUser } from "@/database/schemas/User";
 import { slotDuration } from "@/lib/config";
 import { Types } from "mongoose";
@@ -27,14 +27,15 @@ export async function GET() {
 						startTime: slot.startTime,
 						endTime: slot.endTime,
 						isBooked: slot.isBooked,
-						userId: slot.userId || null,
+						userId: slot.anonymized ? slot.userId || null : null,
 						bookedBy: slot.userId
 							? {
 									name: currentUser?.name || "",
 									avatar: currentUser?.avatar || "",
 								}
 							: undefined,
-					};
+						anonymized: slot.anonymized ?? true,
+					} as ISlot;
 				}),
 		);
 
@@ -69,6 +70,7 @@ export async function GET() {
 					isBooked: false,
 					userId: new Types.ObjectId(),
 					bookedBy: undefined,
+					anonymized: false,
 				});
 			}
 			next_slot.setMinutes(next_slot.getMinutes() + slotDuration);
