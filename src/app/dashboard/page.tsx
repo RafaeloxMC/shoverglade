@@ -132,7 +132,7 @@ export default function Dashboard() {
 
 	if ((loading && !slots.length) || !user)
 		return (
-			<div className="flex h-screen w-full items-center justify-center bg-neutral-950 text-white">
+			<div className="flex h-screen w-full items-center justify-center bg-[#123b49] text-white">
 				<div className="animate-pulse flex flex-col items-center gap-4">
 					<div className="h-8 w-8 rounded-full border-2 border-t-teal-500 border-neutral-800 animate-spin" />
 					<p className="text-neutral-500 text-sm">
