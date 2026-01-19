@@ -4,6 +4,8 @@ import Slot from "@/database/schemas/Slot";
 import { cookies } from "next/headers";
 import { verify, JwtPayload } from "jsonwebtoken";
 import { Types } from "mongoose";
+import { slotDuration } from "@/lib/config";
+import User from "@/database/schemas/User";
 
 async function getCurrentUserId() {
 	const cookieStore = await cookies();
@@ -30,15 +32,25 @@ export async function POST(request: Request) {
 			);
 		}
 
-		const { slotId } = await request.json();
-		if (!slotId) {
+		await connectDB();
+
+		const user = await User.findById(userId);
+		if (!user)
 			return NextResponse.json(
-				{ error: "Missing slotId" },
+				{ error: "Unauthorized" },
+				{ status: 401 },
+			);
+
+		const body = await request.json();
+
+		if (!body.slotStart) {
+			return NextResponse.json(
+				{
+					error: "Bad Request",
+				},
 				{ status: 400 },
 			);
 		}
-
-		await connectDB();
 
 		const existingBooking = await Slot.findOne({ userId, isBooked: true });
 		if (existingBooking) {
@@ -48,24 +60,29 @@ export async function POST(request: Request) {
 			);
 		}
 
-		const slot = await Slot.findById(slotId);
-		if (!slot) {
-			return NextResponse.json(
-				{ error: "Slot not found" },
-				{ status: 404 },
-			);
-		}
+		const now = new Date(body.slotStart);
+		const cutoff = new Date(now.getTime() + slotDuration * 60 * 1000);
 
-		if (slot.isBooked) {
+		let slot = await Slot.findOne({
+			startTime: { $gte: now, $lte: cutoff },
+		});
+		if (slot) {
 			return NextResponse.json(
 				{ error: "Slot is already booked" },
 				{ status: 409 },
 			);
 		}
 
-		slot.isBooked = true;
-		slot.userId = new Types.ObjectId(userId);
-		await slot.save();
+		const end = new Date(body.slotStart);
+		end.setSeconds(0, 0);
+		end.setMinutes(end.getMinutes() + slotDuration);
+
+		slot = await Slot.create({
+			endTime: end,
+			isBooked: true,
+			userId: new Types.ObjectId(userId),
+			startTime: now,
+		});
 
 		return NextResponse.json({ success: true, slot });
 	} catch (e) {

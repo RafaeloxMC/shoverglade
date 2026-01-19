@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/database/db";
 import Slot from "@/database/schemas/Slot";
 import User, { IUser } from "@/database/schemas/User";
+import { slotDuration } from "@/lib/config";
 
 export async function GET() {
 	try {
@@ -36,8 +37,10 @@ export async function GET() {
 
 		const next_slot = new Date();
 		const minutes = next_slot.getMinutes();
-		const remainder = minutes % 20;
-		next_slot.setMinutes(minutes + (remainder === 0 ? 0 : 20 - remainder));
+		const remainder = minutes % slotDuration;
+		next_slot.setMinutes(
+			minutes + (remainder === 0 ? 0 : slotDuration - remainder),
+		);
 		next_slot.setSeconds(0);
 		next_slot.setMilliseconds(0);
 
@@ -51,7 +54,9 @@ export async function GET() {
 		while (next_slot < oneDayLater) {
 			if (!bookedTimes.has(next_slot.getTime())) {
 				const startSlot = new Date(next_slot);
-				const endSlot = new Date(next_slot.getTime() + 20 * 60 * 1000);
+				const endSlot = new Date(
+					next_slot.getTime() + slotDuration * 60 * 1000,
+				);
 				allSlots.push({
 					_id: null,
 					startTime: startSlot,
@@ -61,7 +66,7 @@ export async function GET() {
 					bookedBy: undefined,
 				});
 			}
-			next_slot.setMinutes(next_slot.getMinutes() + 20);
+			next_slot.setMinutes(next_slot.getMinutes() + slotDuration);
 		}
 
 		allSlots.sort(

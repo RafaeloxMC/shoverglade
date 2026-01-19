@@ -93,7 +93,7 @@ export default function Dashboard() {
 			const res = await fetch("/api/v1/slots/book", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ slotId: selectedSlot._id }),
+				body: JSON.stringify({ slotStart: selectedSlot.startTime }),
 			});
 			const data = await res.json();
 			if (!res.ok) {
