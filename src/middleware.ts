@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-	const token = request.cookies.get("shovergladeCookie")?.value;
+	const token = request.cookies.get("showergladeCookie")?.value;
 
 	const isAuthPage = request.nextUrl.pathname.startsWith("/auth/login");
 	const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");

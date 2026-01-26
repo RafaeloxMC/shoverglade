@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 			`${process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:3000"}/dashboard`,
 		);
 
-		response.cookies.set("shovergladeCookie", token, {
+		response.cookies.set("showergladeCookie", token, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "lax",

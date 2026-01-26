@@ -8,44 +8,36 @@ import { twMerge } from "tailwind-merge";
 import { IUser } from "@/database/schemas/User";
 import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/header";
+import CurrentlyShoweringDisplay from "@/components/dashboard/currentlyShowering";
+import { ISlot } from "@/database/schemas/Slot";
+import { Types } from "mongoose";
 
 function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-interface Slot {
-	_id: string;
-	startTime: string;
-	endTime: string;
-	isBooked: boolean;
-	userId: string | null;
-	bookedBy?: {
-		name: string;
-		avatar: string;
-	};
-}
-
 export default function Dashboard() {
 	const router = useRouter();
 
-	const [slots, setSlots] = useState<Slot[]>([]);
+	const [slots, setSlots] = useState<ISlot[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [user, setUser] = useState<IUser | null>(null);
-	const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+	const [selectedSlot, setSelectedSlot] = useState<ISlot | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isAnonymized, setAnonymized] = useState<boolean>(false);
 
 	const fetchSlots = async (silent = false) => {
 		if (!silent) setLoading(true);
 		try {
-			const res = await fetch("/api/v1/slots");
+			const res = await fetch("/api/v1/slots", { cache: "no-store" });
 			if (res.ok) {
 				const data = await res.json();
-				const resSlots = data.slots as Slot[];
+				const resSlots = data.slots as ISlot[];
 				setSlots(
 					resSlots
 						.filter(
 							(a) =>
-								new Date(a.startTime).getTime() >
+								new Date(a.endTime).getTime() >
 								new Date().getTime(),
 						)
 						.sort(
@@ -93,7 +85,11 @@ export default function Dashboard() {
 			const res = await fetch("/api/v1/slots/book", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ slotId: selectedSlot._id }),
+				body: JSON.stringify({
+					slotStart: selectedSlot.startTime,
+					anonymized: isAnonymized,
+				}),
+				credentials: "include",
 			});
 			const data = await res.json();
 			if (!res.ok) {
@@ -111,7 +107,8 @@ export default function Dashboard() {
 		}
 	};
 
-	const handleCancel = async (slotId: string) => {
+	const handleCancel = async (slotId: Types.ObjectId | undefined) => {
+		if (!slotId) return;
 		if (!confirm("Are you sure you want to cancel this booking?")) return;
 
 		setIsSubmitting(true);
@@ -136,7 +133,7 @@ export default function Dashboard() {
 		}
 	};
 
-	const myBooking = slots.find((s) => s.userId === user?._id.toString());
+	const myBooking = slots.find((s) => s.userId === user?._id);
 
 	if ((loading && !slots.length) || !user)
 		return (
@@ -151,7 +148,7 @@ export default function Dashboard() {
 		);
 
 	return (
-		<div className="min-h-screen bg-[#123b49] text-white font-sans selection:bg-teal-100">
+		<div className="w-full min-h-screen bg-[#123b49] text-white font-sans selection:bg-teal-100">
 			<Header user={user} />
 
 			<main className="max-w-3xl mx-auto px-6 pb-20">
@@ -165,20 +162,21 @@ export default function Dashboard() {
 					</p>
 				</div>
 
+				<CurrentlyShoweringDisplay slots={slots} />
+
 				{myBooking && (
-					<div className="mb-10 bg-white rounded-2xl p-6 shadow-sm border border-teal-100 relative overflow-hidden group">
-						<div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
+					<div className="mb-10 bg-teal-800 rounded-2xl p-6 shadow-sm border border-teal-700 relative overflow-hidden group">
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">
+								<p className="text-xs font-bold text-teal-400 uppercase tracking-wider mb-1">
 									Your Reservation
 								</p>
-								<h3 className="text-2xl font-bold text-neutral-900">
+								<h3 className="text-2xl font-bold text-white">
 									{format(
 										new Date(myBooking.startTime),
 										"h:mm aa",
 									)}
-									<span className="text-neutral-300 font-normal mx-2">
+									<span className="text-neutral-200 font-normal mx-2">
 										-
 									</span>
 									{format(
@@ -186,7 +184,7 @@ export default function Dashboard() {
 										"h:mm aa",
 									)}
 								</h3>
-								<p className="text-neutral-500 text-sm mt-1">
+								<p className="text-neutral-200 text-sm mt-1">
 									{format(
 										new Date(myBooking.startTime),
 										"EEEE, MMMM do",
@@ -196,7 +194,7 @@ export default function Dashboard() {
 							<button
 								onClick={() => handleCancel(myBooking._id)}
 								disabled={isSubmitting}
-								className="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+								className="px-4 py-2 hover:bg-red-600 bg-red-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
 							>
 								{isSubmitting
 									? "Cancelling..."
@@ -237,7 +235,7 @@ export default function Dashboard() {
 											slot.startTime;
 										return (
 											<div
-												key={slot.startTime}
+												key={slot.startTime.toString()}
 												className="relative group"
 											>
 												<button
@@ -340,15 +338,29 @@ export default function Dashboard() {
 									</div>
 								</div>
 
-								<button
-									onClick={handleConfirmBooking}
-									disabled={!selectedSlot || isSubmitting}
-									className="w-full md:w-auto px-8 py-3 bg-teal-900 hover:bg-teal-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-teal-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:shadow-none"
-								>
-									{isSubmitting
-										? "Confirming..."
-										: "Confirm Booking"}
-								</button>
+								<div className="flex flex-col gap-2 items-center justify-center">
+									<button
+										onClick={handleConfirmBooking}
+										disabled={!selectedSlot || isSubmitting}
+										className="w-full md:w-auto px-8 py-3 bg-teal-900 hover:bg-teal-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-teal-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:shadow-none"
+									>
+										{isSubmitting
+											? "Confirming..."
+											: "Confirm Booking"}
+									</button>
+									<div className="flex flex-row gap-2">
+										<input
+											type="checkbox"
+											checked={isAnonymized}
+											onChange={(e) =>
+												setAnonymized(
+													e.currentTarget.checked,
+												)
+											}
+										/>
+										<label>Anonymize Booking</label>
+									</div>
+								</div>
 							</div>
 						</div>
 					</>

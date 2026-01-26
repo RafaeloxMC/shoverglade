@@ -1,10 +1,16 @@
 import mongoose, { Model, model, Types } from "mongoose";
 
 export interface ISlot {
+	_id?: Types.ObjectId;
 	startTime: Date;
 	endTime: Date;
 	isBooked: boolean;
 	userId: Types.ObjectId;
+	bookedBy?: {
+		name: string;
+		avatar: string;
+	};
+	anonymized: boolean;
 }
 
 const slotSchema = new mongoose.Schema(
@@ -17,6 +23,7 @@ const slotSchema = new mongoose.Schema(
 			ref: "User",
 			default: null,
 		},
+		anonymized: { type: Boolean, default: false },
 	},
 	{ timestamps: true },
 );

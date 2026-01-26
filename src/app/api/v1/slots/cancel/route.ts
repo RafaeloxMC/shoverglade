@@ -3,10 +3,11 @@ import { connectDB } from "@/database/db";
 import Slot from "@/database/schemas/Slot";
 import { cookies } from "next/headers";
 import { verify, JwtPayload } from "jsonwebtoken";
+import { Types } from "mongoose";
 
 async function getCurrentUserId() {
 	const cookieStore = await cookies();
-	const token = cookieStore.get("shovergladeCookie")?.value;
+	const token = cookieStore.get("showergladeCookie")?.value;
 	if (!token) return null;
 	try {
 		const decoded = verify(
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
 		await connectDB();
 
-		await Slot.deleteOne(slotId);
+		await Slot.deleteOne(new Types.ObjectId(slotId));
 		return NextResponse.json({ success: true });
 	} catch (e) {
 		console.error("Cancel slot error:", e);

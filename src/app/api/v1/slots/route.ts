@@ -1,34 +1,55 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/database/db";
-import Slot from "@/database/schemas/Slot";
-import User, { IUser } from "@/database/schemas/User";
+import Slot, { ISlot } from "@/database/schemas/Slot";
+import { slotDuration } from "@/lib/config";
+import { Types } from "mongoose";
+import { requireAuth } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
 	try {
+		const authResult = await requireAuth(req);
+
+		if ("error" in authResult) {
+			return authResult.error;
+		}
+
+		const { user } = authResult;
+
 		await connectDB();
 
 		const slots = await Slot.find({}).sort({ startTime: 1 });
 
 		const formattedSlots = await Promise.all(
 			slots
-				.filter((a) => a.isBooked && new Date(a.startTime) > new Date())
+				.filter(
+					(a) =>
+						a.isBooked &&
+						new Date(a.endTime).getTime() > new Date().getTime(),
+				)
 				.map(async (slot) => {
-					const currentUser = (await User.findById(
-						slot.userId,
-					).lean()) as IUser | null;
+					const currentUser = user;
 					return {
 						_id: slot._id,
 						startTime: slot.startTime,
 						endTime: slot.endTime,
 						isBooked: slot.isBooked,
-						userId: slot.userId || null,
+						userId:
+							slot.userId.toString() == user._id.toString()
+								? user._id
+								: null,
 						bookedBy: slot.userId
-							? {
-									name: currentUser?.name || "",
-									avatar: currentUser?.avatar || "",
-								}
+							? (slot.anonymized ?? true)
+								? {
+										name: "Anonymous",
+										avatar: "/showerglade.png",
+									}
+								: {
+										name: currentUser?.name || "",
+										avatar: currentUser?.avatar || "",
+									}
 							: undefined,
-					};
+						anonymized: slot.anonymized ?? true,
+					} as ISlot;
 				}),
 		);
 
@@ -36,8 +57,10 @@ export async function GET() {
 
 		const next_slot = new Date();
 		const minutes = next_slot.getMinutes();
-		const remainder = minutes % 20;
-		next_slot.setMinutes(minutes + (remainder === 0 ? 0 : 20 - remainder));
+		const remainder = minutes % slotDuration;
+		next_slot.setMinutes(
+			minutes + (remainder === 0 ? 0 : slotDuration - remainder),
+		);
 		next_slot.setSeconds(0);
 		next_slot.setMilliseconds(0);
 
@@ -51,17 +74,20 @@ export async function GET() {
 		while (next_slot < oneDayLater) {
 			if (!bookedTimes.has(next_slot.getTime())) {
 				const startSlot = new Date(next_slot);
-				const endSlot = new Date(next_slot.getTime() + 20 * 60 * 1000);
+				const endSlot = new Date(
+					next_slot.getTime() + slotDuration * 60 * 1000,
+				);
 				allSlots.push({
-					_id: null,
+					_id: new Types.ObjectId(),
 					startTime: startSlot,
 					endTime: endSlot,
 					isBooked: false,
-					userId: null,
+					userId: new Types.ObjectId(),
 					bookedBy: undefined,
+					anonymized: false,
 				});
 			}
-			next_slot.setMinutes(next_slot.getMinutes() + 20);
+			next_slot.setMinutes(next_slot.getMinutes() + slotDuration);
 		}
 
 		allSlots.sort(
