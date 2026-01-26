@@ -33,6 +33,13 @@ export async function authenticateUser(
 
 		const user = await User.findById(decoded.userId);
 
+		if (
+			user &&
+			process.env.ADMIN_SLACK_IDS?.toString().includes(user.slackId)
+		) {
+			user.isAdmin = true;
+		}
+
 		return user;
 	} catch (error) {
 		console.error("Authentication error:", error);
