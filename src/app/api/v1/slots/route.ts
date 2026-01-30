@@ -5,6 +5,11 @@ import { slotDuration } from "@/lib/config";
 import { Types } from "mongoose";
 import { requireAuth } from "@/lib/auth";
 
+interface BookingUser {
+	name: string;
+	avatar: string;
+}
+
 export async function GET(req: NextRequest) {
 	try {
 		const authResult = await requireAuth(req);
@@ -17,7 +22,7 @@ export async function GET(req: NextRequest) {
 
 		await connectDB();
 
-		const slots = await Slot.find({}).sort({ startTime: 1 });
+		const slots = await Slot.find({}).sort({ startTime: 1 }).populate("userId");
 
 		const formattedSlots = await Promise.all(
 			slots
@@ -27,7 +32,6 @@ export async function GET(req: NextRequest) {
 						new Date(a.endTime).getTime() > new Date().getTime(),
 				)
 				.map(async (slot) => {
-					const currentUser = user;
 					return {
 						_id: slot._id,
 						startTime: slot.startTime,
@@ -43,10 +47,15 @@ export async function GET(req: NextRequest) {
 										name: "Anonymous",
 										avatar: "/showerglade.png",
 									}
-								: {
-										name: slot.bookedBy?.name || "",
-										avatar: slot.bookedBy?.avatar || "",
-									}
+									: (typeof slot.userId === "object" && slot.userId !== null && "name" in slot.userId && "avatar" in slot.userId)
+										? {
+											name: (slot.userId as unknown as BookingUser).name || "Anonymous",
+											avatar: (slot.userId as unknown as BookingUser).avatar || "/showerglade.png",
+										}
+										: {
+											name: "Anonymous",
+											avatar: "/showerglade.png",
+										}
 							: undefined,
 						anonymized: slot.anonymized ?? true,
 					} as ISlot;
