@@ -14,5 +14,5 @@ const userSchema: Schema<IUser> = new Schema({
 	avatar: SchemaTypes.String,
 });
 
-export default (mongoose.models["user"] as Model<IUser>) ||
-	(model("user", userSchema) as Model<IUser>);
+export default (mongoose.models["User"] as Model<IUser>) ||
+	(model("User", userSchema) as Model<IUser>);
