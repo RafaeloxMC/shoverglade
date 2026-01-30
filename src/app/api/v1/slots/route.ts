@@ -47,14 +47,9 @@ export async function GET(req: NextRequest) {
 										name: "Anonymous",
 										avatar: "/showerglade.png",
 									}
-									: (typeof slot.userId === "object" && slot.userId !== null && "name" in slot.userId && "avatar" in slot.userId)
-										? {
+								: {
 											name: (slot.userId as unknown as BookingUser).name || "Anonymous",
 											avatar: (slot.userId as unknown as BookingUser).avatar || "/showerglade.png",
-										}
-										: {
-											name: "Anonymous",
-											avatar: "/showerglade.png",
 										}
 							: undefined,
 						anonymized: slot.anonymized ?? true,
