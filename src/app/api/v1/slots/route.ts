@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
 										avatar: "/showerglade.png",
 									}
 								: {
-										name: currentUser?.name || "",
-										avatar: currentUser?.avatar || "",
+										name: slot.bookedBy?.name || "",
+										avatar: slot.bookedBy?.avatar || "",
 									}
 							: undefined,
 						anonymized: slot.anonymized ?? true,
