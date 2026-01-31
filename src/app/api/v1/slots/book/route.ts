@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json(
 				{
 					error:
-						"You have already booked a slot in the last 24hr. Try again at " +
+						"You have already booked a slot in the last 12hr. Try again at " +
 						new Date(
 							twentyFourHoursAgo.setDate(
 								twentyFourHoursAgo.getDate() + 1,
