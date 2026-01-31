@@ -50,7 +50,15 @@ export async function POST(request: NextRequest) {
 		});
 		if (existingBooking) {
 			return NextResponse.json(
-				{ error: "You already have an active booking." },
+				{
+					error:
+						"You have already booked a slot in the last 24hr. Try again at " +
+						new Date(
+							twentyFourHoursAgo.setDate(
+								twentyFourHoursAgo.getDate() + 1,
+							),
+						).toTimeString(),
+				},
 				{ status: 409 },
 			);
 		}
